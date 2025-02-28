@@ -19,6 +19,7 @@ import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 import { register } from "@/actions/register";
 import { useState, useTransition } from "react";
+import { Loader } from "lucide-react";
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -39,6 +40,7 @@ export const RegisterForm = () => {
       const response = await register(data);
       if(response.success){
         setSuccess(response.message);
+        form.reset();
       }else{
         setError(response.message);
       }
@@ -115,9 +117,8 @@ export const RegisterForm = () => {
           <Button
           type="submit"
           className="w-full"
-          disabled={isPending}
           >
-            Create an account
+            {isPending ? <Loader className="animate-spin" /> : "Register"}
           </Button>
         </form>
       </Form>
