@@ -11,7 +11,7 @@ interface LoginButtonProps {
 export const LoginButton = ({
     children,
     mode,
-    asChild,
+    // asChild,
 }: LoginButtonProps) => {
     const router = useRouter();
 
@@ -28,7 +28,7 @@ export const LoginButton = ({
     }
 
     return (
-        <span onClick={onClick} className="cursor-pointer">
+        <span onClick={onClick} className="hover:cursor-pointer">
             {children}
         </span>
     )
