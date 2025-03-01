@@ -20,7 +20,7 @@ import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 import { login } from "@/actions/login";
 import { useState, useTransition } from "react";
-import { Loader } from "lucide-react";
+import { SyncLoader } from "react-spinners";
 export const LoginForm = () => {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked" ? "Email is already in use with different provider" : "";
@@ -41,7 +41,7 @@ export const LoginForm = () => {
     startTransition(async () => {
       const response = await login(data);
       setError(response?.error);
-      setSuccess(response?.message);
+      setSuccess(response?.success);
     });
   };
 
@@ -99,7 +99,7 @@ export const LoginForm = () => {
           className="w-full"
           >
             {isPending ? (
-              <Loader className="animate-spin" />
+              <SyncLoader color="#fff" size={8}/>
             ) : (
               "Login"
             )}

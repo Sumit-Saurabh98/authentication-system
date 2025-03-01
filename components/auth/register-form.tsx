@@ -19,7 +19,7 @@ import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
 import { register } from "@/actions/register";
 import { useState, useTransition } from "react";
-import { Loader } from "lucide-react";
+import { SyncLoader } from "react-spinners";
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -38,12 +38,8 @@ export const RegisterForm = () => {
     setSuccess("");
     startTransition(async () => {
       const response = await register(data);
-      if(response.success){
-        setSuccess(response.message);
-        form.reset();
-      }else{
-        setError(response.message);
-      }
+      setError(response?.error);
+      setSuccess(response?.success);
     });
   };
 
@@ -118,7 +114,7 @@ export const RegisterForm = () => {
           type="submit"
           className="w-full"
           >
-            {isPending ? <Loader className="animate-spin" /> : "Register"}
+            {isPending ? <SyncLoader color="#fff" size={8}/> : "Register"}
           </Button>
         </form>
       </Form>
