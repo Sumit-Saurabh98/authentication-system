@@ -25,6 +25,7 @@ import Link from "next/link";
 export const LoginForm = () => {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked" ? "Email is already in use with different provider" : "";
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -33,6 +34,7 @@ export const LoginForm = () => {
     defaultValues: {
       email: "",
       password: "",
+      code: "",
     },
   });
 
@@ -40,9 +42,24 @@ export const LoginForm = () => {
     setError("");
     setSuccess("");
     startTransition(async () => {
-      const response = await login(data);
-      setError(response?.error);
-      setSuccess(response?.success);
+      try {
+        const response = await login(data);
+      if(response?.error){
+        setError(response.error);
+        form.reset();
+      }
+
+      if(response?.success){
+        setSuccess(response.success);
+        form.reset();
+      }
+
+      if(response?.twoFactor){
+        setShowTwoFactor(true);
+      }
+      } catch {
+        setError("Something went wrong!");
+      }
     });
   };
 
@@ -56,6 +73,30 @@ export const LoginForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-6">
+            {
+              showTwoFactor &&
+              (<>
+              <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Two Factor Code</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="123456"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              </>)
+            }
+            { !showTwoFactor &&
+            (<>
             <FormField
               control={form.control}
               name="email"
@@ -99,6 +140,8 @@ export const LoginForm = () => {
                 </FormItem>
               )}
             />
+            </>)
+            }
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
@@ -108,9 +151,7 @@ export const LoginForm = () => {
           >
             {isPending ? (
               <SyncLoader color="#fff" size={8}/>
-            ) : (
-              "Login"
-            )}
+            ) : showTwoFactor ? "Confirm" : "Login"}
           </Button>
         </form>
       </Form>
