@@ -135,7 +135,7 @@ export const sendTwoFactorEmail = async (
             </div>
             
             <div class="expiry-note">
-                This code will expire in 1 hours.
+                This code will expire in 5 minutes.
             </div>
             
             <div class="security-note">
