@@ -7,6 +7,7 @@ import { AuthError } from "next-auth";
 import { generateVerificationToken } from "@/lib/tokens";
 import { getUserByEmail } from "@/data/user";
 import { sendVerificationEmail } from "@/lib/mail";
+import bcrypt from "bcryptjs";
 
 export const login = async (values: z.infer<typeof LoginSchema>) =>{
     const validatedFields = LoginSchema.safeParse(values);
@@ -21,6 +22,12 @@ export const login = async (values: z.infer<typeof LoginSchema>) =>{
     const existingUser = await getUserByEmail(email);
 
     if(!existingUser || !existingUser.email || !existingUser.password){
+        return {error: "invalid credentials!"}
+    }
+
+    const passwordsMatch = await bcrypt.compare(password, existingUser.password);
+
+    if(!passwordsMatch){
         return {error: "invalid credentials!"}
     }
 

@@ -21,6 +21,7 @@ import { FormSuccess } from "../form-success";
 import { login } from "@/actions/login";
 import { useState, useTransition } from "react";
 import { SyncLoader } from "react-spinners";
+import Link from "next/link";
 export const LoginForm = () => {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked" ? "Email is already in use with different provider" : "";
@@ -87,6 +88,13 @@ export const LoginForm = () => {
                       disabled={isPending}
                     />
                   </FormControl>
+                  <Button 
+                  size="sm"
+                  variant="link"
+                  asChild
+                  className="px-0 flex justify-start text-normal">
+                    <Link href="/auth/reset">Forgot Password</Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
