@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import { getUserById } from "@/data/user";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
+import { getAccountByUserId } from "./data/account";
 
 
 declare module "next-auth" {
@@ -14,6 +15,7 @@ declare module "next-auth" {
     user: {
       /** The user's postal address. */
       role: string;
+      isOAuth: boolean;
       /**
        * By default, TypeScript merges new interface properties and overwrites existing ones.
        * In this case, the default session user properties will be overwritten,
@@ -24,6 +26,7 @@ declare module "next-auth" {
   }
   interface JWT {
     role?: string;
+    isOAuth: boolean;
   }
 }
 
@@ -87,6 +90,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as string;
       }
 
+      if(session.user){
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+        session.user.isOAuth = token.isOAuth as boolean;
+      }
+
       return session;
     },
     async jwt({ token }) {
@@ -100,6 +109,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token;
       }
 
+      const existingAccount = await getAccountByUserId(existingUser.id);
+
+
+      token.isOAuth = !!existingAccount;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
       token.role = existingUser.role;
 
       return token;
