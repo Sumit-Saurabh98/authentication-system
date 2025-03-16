@@ -8,6 +8,7 @@ import { LoginSchema } from "./schemas";
 import { getUserByEmail } from "./data/user";
 
 export default {
+    secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
     providers: [
         GitHub({
             clientId: process.env.GITHUB_CLIENT_ID as string,

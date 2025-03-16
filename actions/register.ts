@@ -31,6 +31,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) =>{
             email,
             password: hashedPassword,
             name,
+            image:`https://avatar.iran.liara.run/username?username=${name}`,
         }
     });
 
