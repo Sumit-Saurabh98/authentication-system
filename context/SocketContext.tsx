@@ -1,14 +1,16 @@
 "use client"
 
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { IOngoingCall, IParticipants, ISocketUser } from "@/interfaces";
+import { IOngoingCall, IParticipants, IPeerData, ISocketUser } from "@/interfaces";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {io, Socket} from "socket.io-client"
+import Peer, {SignalData} from "simple-peer"
 interface ISocketContext {
     onlineUsers: ISocketUser[] | null;
     ongoingCall: IOngoingCall | null;
     localStream: MediaStream | null;
     handleCall: (user: ISocketUser) => void
+    handleJoinCall: (ongoingCall:IOngoingCall) => void
 }
 
 export const SocketContext = createContext<ISocketContext | null>(null);
@@ -22,6 +24,7 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
     const [onlineUsers, setOnlineUsers] = useState<ISocketUser[] | null>([]);
     const [ongoingCall, setOngoingCall] = useState<IOngoingCall | null>(null);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+    const [peer, setPeer] = useState<IPeerData | null>(null);
 
     // console.log("ongoing call->->->->->->->->", ongoingCall)
 
@@ -91,6 +94,94 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
             isRinging: true
         })
     }, [ongoingCall, socket, currentLoginUser])
+
+    const handleHangup = useCallback(({}) =>{
+
+    }, [])
+
+    const createPeer = useCallback((stream:MediaStream, initiator:boolean)=>{
+
+        const iceServers:RTCIceServer[] = [
+            {
+                urls: [
+                    'stun:stun.l.google.com:19302',
+                    'stun:stun1.l.google.com:19302',
+                    'stun:stun2.l.google.com:19302',
+                    'stun:stun3.l.google.com:19302'
+                ],
+            }
+        ]
+
+        const peer = new Peer({
+            stream,
+            initiator,
+            trickle:true,
+            config: {iceServers}
+        })
+
+        peer.on('stream', (stream) =>{
+            setPeer((prevPeer) =>{
+                if(prevPeer){
+                    return {...prevPeer, stream}
+                }
+
+                return prevPeer
+            })
+        })
+
+        peer.on('error', console.error);
+        peer.on('close', ()=>handleHangup({}))
+
+        const rtcPeerConnection: RTCPeerConnection = (peer as any)._pc
+
+        rtcPeerConnection.oniceconnectionstatechange = async() =>{
+            if(rtcPeerConnection.iceConnectionState === 'failed' || rtcPeerConnection.iceConnectionState === 'disconnected'){
+                handleHangup({})
+            }
+        }
+
+        return peer;
+
+    }, [ongoingCall, setPeer])
+
+    const handleJoinCall = useCallback(async (ongoingCall:IOngoingCall) =>{
+        // join call
+        setOngoingCall(prev=>{
+            if(prev){
+                return {...prev, isRinging: false}
+            }
+            return prev
+        })
+
+        const stream = await getMediaStream();
+
+        if(!stream){
+            console.log("could not get stream in handleJoinCall")
+            return;
+        }
+
+        const newPeer = createPeer(stream, true)
+
+        setPeer({
+            peerConnection: newPeer,
+            participantUser: ongoingCall.participants.caller,
+            stream: undefined
+        })
+
+        newPeer.on('signal', async(data:SignalData) =>{
+            if(socket){
+                console.log("emmiting the offer")
+                // emit offer
+                socket.emit('webrtcSignal', {
+                    sdp:data,
+                    ongoingCall,
+                    isCaller:false
+                })
+            }
+        })
+
+
+    }, [socket, currentSocketUser])
 
     //initiallizing socket
     useEffect(() =>{
@@ -166,7 +257,8 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
         onlineUsers,
         ongoingCall,
         localStream,
-        handleCall
+        handleCall,
+        handleJoinCall,
     }}>
         {children}
     </SocketContext.Provider>

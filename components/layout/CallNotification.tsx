@@ -6,7 +6,7 @@ import {MdCall, MdCallEnd} from "react-icons/md"
 
 
 const CallNotification = () => {
-  const { ongoingCall } = useSocket();
+  const { ongoingCall, handleJoinCall } = useSocket();
 
   if (!ongoingCall?.isRinging) return;
   return (
@@ -20,11 +20,12 @@ const CallNotification = () => {
         </div>
         <p className="text-lg font-bold pb-2">{ongoingCall.participants.caller.profile.name}</p>
         <div className="flex gap-8">
-          <button className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white"><MdCall size={24}/></button>
+          <button className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white"
+          onClick={() =>handleJoinCall(ongoingCall)}
+          ><MdCall size={24}/></button>
           <button className="w-10 h-10 bg-rose-500 rounded-full flex items-center justify-center text-white"><MdCallEnd size={24}/></button>
         </div>
       </div>
-      {/* Incoming Call from {ongoingCall.participants.caller.profile.name} */}
     </div>
   );
 };

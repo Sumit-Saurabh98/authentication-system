@@ -1,4 +1,4 @@
-
+import Peer from "simple-peer"
 export interface ISocketUser {
     userId: string;
     socketId: string;
@@ -19,4 +19,10 @@ export interface IOngoingCall {
 export interface IParticipants {
     caller: ISocketUser;
     receiver: ISocketUser;
+}
+
+export interface IPeerData{
+    peerConnection: Peer.Instance,
+    stream: MediaStream | undefined,
+    participantUser: ISocketUser
 }
