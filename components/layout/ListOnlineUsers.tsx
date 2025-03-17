@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import NoOnlineUsers from "./NoOnlineUsers";
 
 const ListOnlineUsers = () => {
-  const {onlineUsers} = useSocket()
+  const {onlineUsers, handleCall} = useSocket()
   const currentLoginUser = useCurrentUser();
 
   if (!onlineUsers?.length || onlineUsers?.length <= 1) {
@@ -22,7 +22,7 @@ const ListOnlineUsers = () => {
           .filter((user) => user.userId !== currentLoginUser?.id)
           .map((user) => (
             <Card
-              key={user.profile.id}
+              key={user.userId}
               className="p-4 flex flex-col items-center shadow-md rounded-xl"
             >
               <Avatar className="w-16 h-16 mb-3">
@@ -30,7 +30,7 @@ const ListOnlineUsers = () => {
                 <AvatarFallback>{user.profile.name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <p className="text-lg font-semibold">{user.profile.name}</p>
-              <Button className="mt-3 w-full flex items-center gap-2">
+              <Button onClick={() => handleCall(user)} className="mt-3 w-full flex items-center gap-2">
                 <PhoneCall size={16} /> Call
               </Button>
             </Card>
