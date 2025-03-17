@@ -2,11 +2,11 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { SocketUser } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
 import {io, Socket} from "socket.io-client"
-interface iSocketContext {
-    
+interface ISocketContext {
+    onlineUsers: SocketUser[] | null;
 }
 
-export const SocketContext = createContext<iSocketContext | null>(null);
+export const SocketContext = createContext<ISocketContext | null>(null);
 
 
 export const SocketContextProvider = ({children}: {children: React.ReactNode}) => {
@@ -76,16 +76,17 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
     }, [socket, isSocketConnected, currentLoginUser])
 
 
-    return <SocketContext.Provider value={{}}>
+    return <SocketContext.Provider value={{
+        onlineUsers
+    }}>
         {children}
     </SocketContext.Provider>
 }
 
 export const useSocket = () => {
-    if(SocketContext===null) {
+    const context = useContext(SocketContext);
+    if(context === null) {
         throw new Error("useSocket must be used within a SocketContextProvider")
     }
-
-    const context = useContext(SocketContext);
     return context;
 }
