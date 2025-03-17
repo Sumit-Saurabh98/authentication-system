@@ -1,42 +1,44 @@
-
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { SockerUser } from "@/types";
+import { SocketUser } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
-
-interface ISocketContext {
+import {io, Socket} from "socket.io-client"
+interface iSocketContext {
     
 }
 
+export const SocketContext = createContext<iSocketContext | null>(null);
 
-export const SocketContext = createContext<ISocketContext | null>(null);
 
-
-export const SocketContextProvider = ({children}:{children: React.ReactNode}) =>{
-    const user = useCurrentUser();
-    console.log("user->>>>>>>>>>", user);
+export const SocketContextProvider = ({children}: {children: React.ReactNode}) => {
+    const currentLoginUser = useCurrentUser();
+    console.log(currentLoginUser, "currentLoginUser=>>>>>>>>>");
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isSocketConnected, setIsSocketConnected] = useState(false);
-    const [onlineUsers, setOnlineUsers] = useState<SockerUser | null>(null);
+    const [onlineUsers, setOnlineUsers] = useState<SocketUser[] | null>([]);
 
-    console.log("onlineUsers->>>>>>>>>>", onlineUsers);
+    console.log(isSocketConnected, "isSocketConnected->->->->->");
+    console.log(onlineUsers, "onlineUsers->->->->->");
 
-    // initialize socket
-    useEffect(() => {
+    //initiallizing socket
+
+    useEffect(() =>{
+        
         const newSocket = io();
         setSocket(newSocket);
 
-        return () => {
+        return () =>{
             newSocket.disconnect();
         }
-    }, [user])
 
-    useEffect(() => {
-        if(socket===null) return;
+    }, [currentLoginUser])
 
+    useEffect(()=>{
+        if(socket === null) return
+        
         if(socket.connected){
-            onConnect();
+            onConnect()
         }
+
         function onConnect(){
             setIsSocketConnected(true);
         }
@@ -45,43 +47,45 @@ export const SocketContextProvider = ({children}:{children: React.ReactNode}) =>
             setIsSocketConnected(false);
         }
 
-        socket.on("connect", onConnect);
-        socket.on("disconnect", onDisconnect);
+        socket.on('connect', onConnect);
+        socket.on('disconnect', onDisconnect);
+
         return () => {
-            socket.off("connect", onConnect);
-            socket.off("disconnect", onDisconnect);
+            socket.off('connect', onConnect);
+            socket.off('disconnect', onDisconnect);
         }
+
     }, [socket])
 
-    //set online users
-    useEffect(() => {
-        if(socket===null || !isSocketConnected) return;
+    // set online users
+    useEffect(() =>{
+        if(!socket || !isSocketConnected) return;
 
-        socket.emit("addNewUser", user);
+        socket.emit('addNewUser', currentLoginUser);
 
-        socket.on("getUsers", (users) => {
-            setOnlineUsers(users);
+        socket.on("getUsers", (res) =>{
+            setOnlineUsers(res)
         })
 
         return () => {
-            socket.off("getUsers", (users) => {
-                setOnlineUsers(users);
+            socket.off("getUsers", (res) =>{
+                setOnlineUsers(res)
             })
         }
-        
-    }, [socket, isSocketConnected, user])
 
-    return (
-        <SocketContext.Provider value={{}}>
-            {children}
-        </SocketContext.Provider>     
-    )
+    }, [socket, isSocketConnected, currentLoginUser])
+
+
+    return <SocketContext.Provider value={{}}>
+        {children}
+    </SocketContext.Provider>
 }
 
 export const useSocket = () => {
-    const context = useContext(SocketContext);
-    if (!context) {
-      throw new Error("useSocket must be used within a SocketContextProvider");
+    if(SocketContext===null) {
+        throw new Error("useSocket must be used within a SocketContextProvider")
     }
+
+    const context = useContext(SocketContext);
     return context;
-  };
+}

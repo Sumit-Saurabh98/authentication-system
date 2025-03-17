@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import {SessionProvider} from "next-auth/react";
 import {auth} from "@/auth"
-import SocketProvider from "@/providers/SocketProvider";
 import Navbar from "@/components/layout/Navbar";
+import SockerProvider from "@/providers/SocketProvider";
 import Container from "@/components/layout/Container";
 
 const geistSans = Geist({
@@ -34,14 +34,16 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SocketProvider>
-        {/* <main className="flex min-h-screen flex-col bg-secondary"> */}
+        <SockerProvider>
+
+        
+        <main className="flex min-h-screen flex-col bg-secondary">
           <Navbar/>
-        {/* <Container> */}
+        <Container>
         {children}
-        {/* </Container> */}
-        {/* </main> */}
-        </SocketProvider>
+        </Container>
+        </main>
+        </SockerProvider>
       </body>
     </html>
     </SessionProvider>

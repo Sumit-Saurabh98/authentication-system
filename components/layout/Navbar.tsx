@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 const Navbar = () => {
   const router = useRouter();
   const user = useCurrentUser();
-  console.log(user, "user id");
   return (
     <div className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <Container>

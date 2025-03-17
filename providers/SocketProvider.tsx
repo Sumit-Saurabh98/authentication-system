@@ -2,12 +2,10 @@
 
 import { SocketContextProvider } from "@/context/SocketContext"
 
-const SocketProvider = ({children}:{children: React.ReactNode}) => {
+const SockerProvider = ({children}: {children: React.ReactNode}) => {
     return (
-        <SocketContextProvider>
-                {children}
-        </SocketContextProvider>
+        <SocketContextProvider>{children}</SocketContextProvider>
     )
 }
 
-export default SocketProvider
+export default SockerProvider;  // eslint-disable-line

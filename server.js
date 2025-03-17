@@ -9,8 +9,6 @@ const port = 3000;
 const app = next({ dev, hostname, port });
 const handler = app.getRequestHandler();
 
-console.log("->->->->->->->->Arre bhai server start ho gya🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️🏃‍♂️->->->->->->->->->")
-
 app.prepare().then(() => {
   const httpServer = createServer(handler);
 
@@ -19,17 +17,29 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     
-    socket.on("addNewUser", (clerkUser) => {
-      clerkUser && !onlineUsers.some((user) => user?.userId === clerkUser.id) && onlineUsers.push({
-        userId: clerkUser.id,
+    // add user
+    socket.on("addNewUser", (authUser) =>{
+      authUser && !onlineUsers.some((user) => user?.userId === authUser.id) && onlineUsers.push({
+        userId: authUser.id,
         socketId: socket.id,
-        profile: clerkUser
+        profile: {
+          id: authUser.id,
+          name: authUser.name,
+          email: authUser.email,
+          image: authUser.image,
+          role: authUser.role
+        }
       });
-      io.emit("getUsers", onlineUsers);
-    });
 
+      // send active users
+      io.emit("getUsers", onlineUsers);
+    })
+
+    // remove user
     socket.on("disconnect", () => {
       onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+
+      // send active users
       io.emit("getUsers", onlineUsers);
     });
   });
