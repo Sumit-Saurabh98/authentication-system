@@ -144,6 +144,44 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
 
     }, [ongoingCall, setPeer])
 
+    const completePeerConnection = useCallback(async (connectionData:{
+        sdp:SignalData,
+        ongoingCall:IOngoingCall,
+        isCaller:boolean
+    }) =>{
+
+        if(!localStream){
+            console.log("missing the local stream")
+            return
+        }
+
+        if(peer){
+            peer.peerConnection.signal(connectionData.sdp)
+            return;
+        }
+
+        const newPeer = createPeer(localStream, true)
+
+        setPeer({
+            peerConnection: newPeer,
+            participantUser: connectionData.ongoingCall.participants.receiver,
+            stream: undefined
+        })
+
+        newPeer.on('signal', async(data:SignalData) =>{
+            if(socket){
+                console.log("emmiting the offer")
+                // emit offer
+                socket.emit('webrtcSignal', {
+                    sdp:data,
+                    ongoingCall,
+                    isCaller:true
+                })
+            }
+        })
+
+    },[localStream, createPeer, peer, ongoingCall])
+
     const handleJoinCall = useCallback(async (ongoingCall:IOngoingCall) =>{
         // join call
         setOngoingCall(prev=>{
@@ -244,6 +282,7 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
         if(!socket || !isSocketConnected) return;
 
         socket.on('incomingCall', onInComingCall)
+        socket.on('webrtcSignal', completePeerConnection)
 
         return () => {
             socket.off('incomingCall', onInComingCall)
