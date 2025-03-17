@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 
 interface IVideoContainer{
@@ -19,7 +20,7 @@ const VideoContainer = ({stream, isLocalStream, isOnCall}: IVideoContainer) => {
     }, [stream])
 
   return (
-    <video ref={videoRef} className="rounded border w-[800px]" autoPlay playsInline muted={isLocalStream} />
+    <video ref={videoRef} className={cn("rounded border w-[800px]", isLocalStream && isOnCall && "w-[200px] h-auto absolute border-purple-500 border-2")} autoPlay playsInline muted={isLocalStream} />
   )
 }
 

@@ -8,7 +8,9 @@ import { useCallback, useEffect, useState } from "react";
 const VideoCall = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVidOn, setIsVidOn] = useState(true);
-  const { localStream } = useSocket();
+  const { localStream, peer, ongoingCall } = useSocket();
+
+  console.log(peer, "mere peer->>>=>>>=>>>->>")
 
   useEffect(() => {
     if (localStream) {
@@ -40,18 +42,26 @@ const VideoCall = () => {
     }
   }, [localStream]);
 
+  const isOnCall = localStream && peer && ongoingCall ? true : false;
+
   return (
     <div>
-      <div>
+      <div className="mt-4 relative">
         {localStream && (
           <VideoContainer
             stream={localStream}
             isLocalStream={true}
-            isOnCall={false}
+            isOnCall={isOnCall}
+          />
+        )}
+        {peer && peer.stream && (
+          <VideoContainer
+            stream={peer.stream}
+            isLocalStream={false}
+            isOnCall={isOnCall}
           />
         )}
       </div>
-
       <div className="mt-8 flex items-center justify-center">
         <button onClick={toggleMic}>
           {isMicOn ? <MdMic size={28} /> : <MdMicOff size={28} />}

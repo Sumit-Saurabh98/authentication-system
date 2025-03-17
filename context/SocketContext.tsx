@@ -9,6 +9,7 @@ interface ISocketContext {
     onlineUsers: ISocketUser[] | null;
     ongoingCall: IOngoingCall | null;
     localStream: MediaStream | null;
+    peer: IPeerData | null;
     handleCall: (user: ISocketUser) => void
     handleJoinCall: (ongoingCall:IOngoingCall) => void
 }
@@ -286,16 +287,18 @@ export const SocketContextProvider = ({children}: {children: React.ReactNode}) =
 
         return () => {
             socket.off('incomingCall', onInComingCall)
+            socket.off('webrtcSignal', completePeerConnection)
         }
 
 
-    }, [onInComingCall, socket, isSocketConnected, currentLoginUser])
+    }, [onInComingCall, socket, isSocketConnected, currentLoginUser, completePeerConnection])
 
 
     return <SocketContext.Provider value={{
         onlineUsers,
         ongoingCall,
         localStream,
+        peer,
         handleCall,
         handleJoinCall,
     }}>
